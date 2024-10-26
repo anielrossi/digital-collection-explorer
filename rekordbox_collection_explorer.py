@@ -105,9 +105,10 @@ for idx, x in df_final.iterrows():
 
 #TODO CLEAN COMMENT FIELD BEFORE WRITING
 
-print("---------writing comments---------")
-for idx, x in df_final.iterrows():
+print("---------delete comments---------")
+for idx, x in df_final.iloc[:5].iterrows():
     try:
+        print(x)
         filez = glob.glob(os.path.join(x["Path"], '*.mp3'))
         genres_str = ""
         if x["Style"]:
@@ -118,9 +119,27 @@ for idx, x in df_final.iterrows():
                 genres_str += genre + "|"
             for i in filez:
                 mp3file = ID3(i)
-                #from old file, don't know if needed
-                #mp3file["TCON"] = TCON(encoding=3, text=x["Style"][0])
-                mp3file["COMM"] = COMM(encoding=3, text=genres_str[:-1])
+                mp3file.delall("COMM") 
+                mp3file.save()
+    except Exception as e:
+        print("error:", e)
+
+print("---------writing comments---------")
+for idx, x in df_final.iloc[:5].iterrows():
+    try:
+        print(x)
+        filez = glob.glob(os.path.join(x["Path"], '*.mp3'))
+        genres_str = ""
+        if x["Style"]:
+            #only if reading df
+            #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
+            ###
+            for genre in x["Style"]:
+                genres_str += genre + "|"
+            for i in filez:
+                mp3file = MP3(i, ID3=EasyID3)
+                EasyID3.RegisterTextKey('comment', 'COMM')
+                mp3file["comment"] = genres_str[:-1]
                 mp3file.save()
     except Exception as e:
         print("error:", e)
