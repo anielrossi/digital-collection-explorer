@@ -71,6 +71,7 @@ df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
 """
 
+"""
 print("---------writing labels---------")
 for idx, x in df_final.iterrows():
     try:
@@ -100,6 +101,9 @@ for idx, x in df_final.iterrows():
                 mp3file.save()
     except:
         print("error:", idx)
+"""
+
+#TODO CLEAN COMMENT FIELD BEFORE WRITING
 
 print("---------writing comments---------")
 for idx, x in df_final.iterrows():
@@ -116,7 +120,7 @@ for idx, x in df_final.iterrows():
                 mp3file = ID3(i)
                 #from old file, don't know if needed
                 #mp3file["TCON"] = TCON(encoding=3, text=x["Style"][0])
-                mp3file.add(COMM(encoding=3, text=genres_str[:-1]))
+                mp3file["COMM"] = COMM(encoding=3, text=genres_str[:-1])
                 mp3file.save()
-    except:
-        print("error:", idx)
+    except Exception as e:
+        print("error:", e)
