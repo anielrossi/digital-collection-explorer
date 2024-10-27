@@ -72,14 +72,14 @@ df.to_csv("df_local.csv")
 
 import pandas as pd
 
-df_final = pd.read_csv('df_clean_local.csv', index_col=0)
+df = pd.read_csv('df_clean_local.csv', index_col=0)
 
 
-#errors = df[df["OK/KO"] == "KO"]
-#df_final = df.drop(index=errors.index)
+errors = df[(df["OK/KO"] == "KO") | (df["Genres"] == "error")]
+df_final = df.drop(index=errors.index)
 
-#df_final.to_csv("df_clean_local.csv")
-#errors.to_csv('errors_local.csv')
+df_final.to_csv("df_clean_local.csv")
+errors.to_csv('errors_local.csv')
 
 """
 df_exploded = df_final.explode("style").drop("genres", axis=1)
@@ -92,7 +92,7 @@ print("---------writing labels---------")
 for idx, x in df_final.iterrows():
     try:
         filez = glob.glob(x["Path"])
-        if (x["Labels"]):
+        if (x["Labels"]) and x["Labels"] != "error":
             for i in filez:
                 mp3file = MP3(i, ID3=EasyID3)
                 mp3file["organization"] = x["Labels"]
