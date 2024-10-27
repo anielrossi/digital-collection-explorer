@@ -71,7 +71,6 @@ df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
 """
 
-"""
 print("---------writing labels---------")
 for idx, x in df_final.iterrows():
     try:
@@ -101,12 +100,9 @@ for idx, x in df_final.iterrows():
                 mp3file.save()
     except:
         print("error:", idx)
-"""
-
-#TODO CLEAN COMMENT FIELD BEFORE WRITING
 
 print("---------delete comments---------")
-for idx, x in df_final.iloc[:5].iterrows():
+for idx, x in df_final.iterrows():
     try:
         print(x)
         filez = glob.glob(os.path.join(x["Path"], '*.mp3'))
@@ -125,7 +121,7 @@ for idx, x in df_final.iloc[:5].iterrows():
         print("error:", e)
 
 print("---------writing comments---------")
-for idx, x in df_final.iloc[:5].iterrows():
+for idx, x in df_final.iterrows():
     try:
         print(x)
         filez = glob.glob(os.path.join(x["Path"], '*.mp3'))
