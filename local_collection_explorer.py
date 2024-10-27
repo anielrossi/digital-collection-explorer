@@ -11,29 +11,64 @@ from mutagen.id3 import ID3, TCON, COMM
 #Requirements:
 # all files mp3 for tagging standard
 
-"""
+
 root_dir = "/Volumes/TOSHIBA/Rekordbox_database_selected"
 
 data = []
 
-for filename in os.listdir(root_dir):
-    print(filename)
-    file_path = os.path.join(root_dir, filename)
-    if os.path.isfile(file_path):
-        print(file_path)
-        try:
-            mp3file = MP3(file_path, ID3=EasyID3)
-            data.append({"Artist": mp3file["artist"][0],
-                        "Title": mp3file["title"][0],
-                        "Album": mp3file["album"][0], 
-                        "Path": file_path,
-                        "OK/KO": "OK"})
-        except:
-            data.append({"Artist": "",
-                        "Title": "",
-                        "Album": "", 
-                        "Path": file_path,
-                        "OK/KO": "KO"})
+"""
+for dirpath, dirnames, filenames in os.walk(root_dir):
+    for filename in filenames:
+        file_path = os.path.join(dirpath, filename)
+        # Check if the file is an MP3 file (you can adjust this check if needed)
+        if file_path.lower().endswith(".mp3") and not file_path.split("/")[-1].lower().startswith("."):
+            print(filename)            
+            try:
+                mp3file = MP3(file_path, ID3=EasyID3)
+                data.append({
+                    "Artist": mp3file.get("artist", [""])[0],
+                    "Title": mp3file.get("title", [""])[0],
+                    "Album": mp3file.get("album", [""])[0], 
+                    "Path": file_path,
+                    "OK/KO": "OK"
+                })
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+                data.append({
+                    "Artist": "",
+                    "Title": "",
+                    "Album": "", 
+                    "Path": file_path,
+                    "OK/KO": "KO"
+                })
+"""
+for dirpath, dirnames, filenames in os.walk(root_dir):
+    for filename in filenames:
+        file_path = os.path.join(dirpath, filename)
+        
+        # Check if the file is an MP3 file (you can adjust this check if needed)
+        if file_path.lower().endswith(".mp3"):
+            print(filename)
+            print(file_path)
+            
+            try:
+                mp3file = MP3(file_path, ID3=EasyID3)
+                data.append({
+                    "Artist": mp3file.get("artist", [""])[0],
+                    "Title": mp3file.get("title", [""])[0],
+                    "Album": mp3file.get("album", [""])[0], 
+                    "Path": file_path,
+                    "OK/KO": "OK"
+                })
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+                data.append({
+                    "Artist": "",
+                    "Title": "",
+                    "Album": "", 
+                    "Path": file_path,
+                    "OK/KO": "KO"
+                })
 
 # Create a DataFrame from the data
 df = pd.DataFrame(data, columns=["Artist", "Title", "Album", "Path", "OK/KO"])
@@ -68,12 +103,13 @@ df["Genres"] = genres
 df["Labels"] = labels
 
 df.to_csv("df_local.csv")
-"""
 
+"""
 import pandas as pd
 
 df = pd.read_csv('df_clean_local.csv', index_col=0)
 
+"""
 
 errors = df[(df["OK/KO"] == "KO") | (df["Genres"] == "error")]
 df_final = df.drop(index=errors.index)
@@ -81,12 +117,12 @@ df_final = df.drop(index=errors.index)
 df_final.to_csv("df_clean_local.csv")
 errors.to_csv('errors_local.csv')
 
-"""
+
 df_exploded = df_final.explode("style").drop("genres", axis=1)
 set(df_exploded["style"])
 df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
-"""
+
 
 print("---------writing labels---------")
 for idx, x in df_final.iterrows():
