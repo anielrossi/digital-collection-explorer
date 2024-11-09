@@ -109,7 +109,7 @@ df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
 """
 
-
+#TODO DIDNT WORK, CHECK
 print("---------writing labels---------")
 for idx, x in df_final.iterrows():
     try:
@@ -180,6 +180,7 @@ for idx, x in df_final.iterrows():
         print("error:", e)
 
 """
+TODO CHECK STYLE WRITING, IS NOT WORKING
 print("---------writing styles---------")
 for idx, x in df_final.iterrows():
     try:
