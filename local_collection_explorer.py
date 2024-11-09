@@ -17,53 +17,30 @@ import librosa
 
 
 root_dir = "/Volumes/TOSHIBA/Rekordbox_database_selected"
+#root_dir = "/Volumes/TOSHIBA/test_collection" 
 
 data = []
 
-"""
 for dirpath, dirnames, filenames in os.walk(root_dir):
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
         # Check if the file is an MP3 file (you can adjust this check if needed)
-        if file_path.lower().endswith(".mp3") and not file_path.split("/")[-1].lower().startswith("."):
-            print(filename)            
+        if file_path.lower().endswith(".mp3") and not file_path.split("/")[-1].lower().startswith("."):           
             try:
+                id3file = ID3(file_path)
+                comments = id3file.getall("COMM")
+                extracted_texts = [comm.text[0] for comm in comments]
                 mp3file = MP3(file_path, ID3=EasyID3)
-                data.append({
-                    "Artist": mp3file.get("artist", [""])[0],
-                    "Title": mp3file.get("title", [""])[0],
-                    "Album": mp3file.get("album", [""])[0], 
-                    "Path": file_path,
-                    "OK/KO": "OK"
-                })
-            except Exception as e:
-                print(f"Error processing {file_path}: {e}")
-                data.append({
-                    "Artist": "",
-                    "Title": "",
-                    "Album": "", 
-                    "Path": file_path,
-                    "OK/KO": "KO"
-                })
-
-for dirpath, dirnames, filenames in os.walk(root_dir):
-    for filename in filenames:
-        file_path = os.path.join(dirpath, filename)
-        
-        # Check if the file is an MP3 file (you can adjust this check if needed)
-        if file_path.lower().endswith(".mp3"):
-            print(filename)
-            print(file_path)
-            
-            try:
-                mp3file = MP3(file_path, ID3=EasyID3)
-                data.append({
-                    "Artist": mp3file.get("artist", [""])[0],
-                    "Title": mp3file.get("title", [""])[0],
-                    "Album": mp3file.get("album", [""])[0], 
-                    "Path": file_path,
-                    "OK/KO": "OK"
-                })
+                if(extracted_texts == []):
+                    print('Empty comment section')
+                    print(filename) 
+                    data.append({
+                        "Artist": mp3file.get("artist", [""])[0],
+                        "Title": mp3file.get("title", [""])[0],
+                        "Album": mp3file.get("album", [""])[0], 
+                        "Path": file_path,
+                        "OK/KO": "OK"
+                    })
             except Exception as e:
                 print(f"Error processing {file_path}: {e}")
                 data.append({
@@ -77,6 +54,8 @@ for dirpath, dirnames, filenames in os.walk(root_dir):
 # Create a DataFrame from the data
 df = pd.DataFrame(data, columns=["Artist", "Title", "Album", "Path", "OK/KO"])
 
+print(len(df))
+
 #Discogs client 
 d = discogs_client.Client('tracklist_explorer', user_token='TQnLrfoPbUSIPjrwWqIkZSkuJczEwsHtQXbdegwL')
 
@@ -89,6 +68,9 @@ print("start search")
 for idx,i in df.iterrows():
     print(idx)
     try:
+        #see if comment is populated (?) nah
+        # put a flag for the ones already processed 
+        #mp3file = MP3(file_path, ID3=EasyID3)
         #release = d.search(i["Artist"] + " " + i["Album"], type='release')[0]
         release = d.search(i["Album"], artist=i["Artist"], type='release')[0]
         print(release)
@@ -106,12 +88,12 @@ df["Style"] = styles
 df["Genres"] = genres
 df["Labels"] = labels
 
-df.to_csv("df_local.csv")
-"""
+#df.to_csv("df_local.csv")
 
-import pandas as pd
 
-df = pd.read_csv('df_clean_local.csv', index_col=0)
+#import pandas as pd
+
+#df = pd.read_csv('df_clean_local.csv', index_col=0)
 #df['Path'] = df.apply(lambda row: f"{root_dir}/{row['Artist']} - {row['Title']}.mp3", axis=1)
 
 errors = df[(df["OK/KO"] == "KO") | (df["Genres"] == "error")]
@@ -127,7 +109,7 @@ df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
 """
 
-"""
+
 print("---------writing labels---------")
 for idx, x in df_final.iterrows():
     try:
@@ -148,7 +130,7 @@ for idx, x in df_final.iterrows():
         genres_str = ""
         if (x["Style"]):
             #only if reading df
-            x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
+            #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
             for genre in x["Style"]:
                 genres_str += genre + "|"
@@ -159,6 +141,7 @@ for idx, x in df_final.iterrows():
     except:
         print("error:", idx)
 
+"""
 print("---------delete comments---------")
 for idx, x in df_final.iterrows():
     try:
@@ -175,7 +158,7 @@ for idx, x in df_final.iterrows():
                 mp3file.save()
     except Exception as e:
         print("error:", e)
-
+"""
 print("---------writing comments---------")
 for idx, x in df_final.iterrows():
     try:
@@ -184,7 +167,7 @@ for idx, x in df_final.iterrows():
         genres_str = ""
         if x["Style"]:
             #only if reading df
-            x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
+            #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
             for genre in x["Style"]:
                 genres_str += genre + ", "
@@ -196,7 +179,7 @@ for idx, x in df_final.iterrows():
     except Exception as e:
         print("error:", e)
 
-
+"""
 print("---------writing styles---------")
 for idx, x in df_final.iterrows():
     try:
@@ -205,7 +188,7 @@ for idx, x in df_final.iterrows():
         genres_str = ""
         if x["Style"]:
             #only if reading df
-            x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
+            #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
             for genre in x["Style"]:
                 genres_str += genre + ", "
@@ -215,7 +198,8 @@ for idx, x in df_final.iterrows():
                 mp3file.save()
     except Exception as e:
         print("error:", e)
-"""
+
+
 
 def load_mp3_with_pydub(file_path):
     try:
@@ -294,3 +278,5 @@ for idx, x in df_final.iloc[:1].iterrows():
             write_bpm_to_mp3(audio_file_path, bpm)
     except Exception as e:
         print("error:", e)
+
+"""
