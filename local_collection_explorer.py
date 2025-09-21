@@ -3,26 +3,18 @@ import pandas as pd
 
 import discogs_client
 
-import glob
 from mutagen.mp3 import MP3  
 from mutagen.easyid3 import EasyID3  
-from mutagen.id3 import ID3, TBPM
+from mutagen.id3 import ID3
 
-import numpy as np
-from pydub import AudioSegment
-import librosa
-
-#Requirements:
-# all files mp3 for tagging standard
-
-
-root_dir = "/Volumes/TOSHIBA/Rekordbox_database_selected"
-#root_dir = "/Volumes/TOSHIBA/test_collection" 
+#root_dir = "/Volumes/TOSHIBA/Rekordbox_database_selected"
+#root_dir = "/Volumes/TOSHIBA/test_collection"
+root_dir = "/Users/aniel/digital-collection-explorer/test" 
 
 data = []
 
 for dirpath, dirnames, filenames in os.walk(root_dir):
-    for filename in filenames:
+     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
         # Check if the file is an MP3 file (you can adjust this check if needed)
         if file_path.lower().endswith(".mp3") and not file_path.split("/")[-1].lower().startswith("."):           
@@ -31,8 +23,8 @@ for dirpath, dirnames, filenames in os.walk(root_dir):
                 comments = id3file.getall("COMM")
                 extracted_texts = [comm.text[0] for comm in comments]
                 mp3file = MP3(file_path, ID3=EasyID3)
-                if(extracted_texts == []):
-                    print('Empty comment section')
+                if(extracted_texts == [] or "Visit" in extracted_texts[0]):
+                    print('Empty comment section or Visit from bandcamp')
                     print(filename) 
                     data.append({
                         "Artist": mp3file.get("artist", [""])[0],
@@ -72,6 +64,7 @@ for idx,i in df.iterrows():
         # put a flag for the ones already processed 
         #mp3file = MP3(file_path, ID3=EasyID3)
         #release = d.search(i["Artist"] + " " + i["Album"], type='release')[0]
+        print(i["Artist"],i["Album"])
         release = d.search(i["Album"], artist=i["Artist"], type='release')[0]
         print(release)
         labels.append(release.labels[0].name)
@@ -88,7 +81,7 @@ df["Style"] = styles
 df["Genres"] = genres
 df["Labels"] = labels
 
-#df.to_csv("df_local.csv")
+df.to_csv("df_local.csv")
 
 
 #import pandas as pd
@@ -109,175 +102,65 @@ df_exploded[df_exploded["style"] == "Ambient"]
 df_exploded.to_csv("df_exploded_rekordbox.csv")
 """
 
-#TODO DIDNT WORK, CHECK
 print("---------writing labels---------")
-for idx, x in df_final.iterrows():
+for idx, i in df_final.iterrows():
     try:
-        filez = glob.glob(x["Path"])
-        if (x["Labels"]) and x["Labels"] != "error":
-            for i in filez:
-                mp3file = MP3(i, ID3=EasyID3)
-                #organization corresponds to PUBLISHER
-                mp3file["organization"] = x["Labels"]
-                mp3file.save()
+        if (i["Labels"]) and i["Labels"] != "error":
+            #for i in filez:
+            mp3file = MP3(i["Path"], ID3=EasyID3)
+            #organization corresponds to PUBLISHER
+            mp3file["organization"] = i["Labels"]
+            mp3file.save()
     except Exception as e:
         print("error:", e)
 
 print("---------writing genres---------")
-for idx, x in df_final.iterrows():
+for idx, i in df_final.iterrows():
     try:
-        filez = glob.glob(x["Path"])
         genres_str = ""
-        if (x["Style"]):
+        if (i["Style"]):
             #only if reading df
             #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
-            for genre in x["Style"]:
+            for genre in i["Style"]:
                 genres_str += genre + "|"
-            for i in filez:
-                mp3file = MP3(i, ID3=EasyID3)
-                mp3file["genre"] = x["Style"][0]
-                mp3file.save()
+            #for i in filez:
+            mp3file = MP3(i["Path"], ID3=EasyID3)
+            mp3file["genre"] = i["Genres"][0]
+            mp3file.save()
     except:
         print("error:", idx)
 
-"""
 print("---------delete comments---------")
-for idx, x in df_final.iterrows():
+for idx, i in df_final.iterrows():
     try:
-        print(x)
-        filez = glob.glob(x["Path"])
+        print(i)
         genres_str = ""
-        if x["Style"]:
+        if i["Style"]:
             #only if reading df
             #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
-            for i in filez:
-                mp3file = ID3(i)
-                mp3file.delall("COMM") 
-                mp3file.save()
+            #for i in filez:
+            mp3file = ID3(i["Path"])
+            mp3file.delall("COMM") 
+            mp3file.save()
     except Exception as e:
         print("error:", e)
-"""
+
 print("---------writing comments---------")
-for idx, x in df_final.iterrows():
+for idx, i in df_final.iterrows():
     try:
-        print(x)
-        filez = glob.glob(x["Path"])
+        print(i)
         genres_str = ""
-        if x["Style"]:
+        if i["Style"]:
             #only if reading df
             #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
             ###
-            for genre in x["Style"]:
-                genres_str += genre + ", "
-            for i in filez:
-                mp3file = MP3(i, ID3=EasyID3)
-                EasyID3.RegisterTextKey('comment', 'COMM')
-                mp3file["comment"] = genres_str[:-2]
-                mp3file.save()
+            for genre in i["Style"]:
+                genres_str += genre + "|"
+            mp3file = MP3(i["Path"], ID3=EasyID3)
+            EasyID3.RegisterTextKey('comment', 'COMM')
+            mp3file["comment"] = genres_str[:-1]
+            mp3file.save()
     except Exception as e:
         print("error:", e)
-
-"""
-TODO CHECK STYLE WRITING, IS NOT WORKING
-print("---------writing styles---------")
-for idx, x in df_final.iterrows():
-    try:
-        print(x)
-        filez = glob.glob(x["Path"])
-        genres_str = ""
-        if x["Style"]:
-            #only if reading df
-            #x["Style"] = x["Style"].strip('][').replace("'", "").split(', ')
-            ###
-            for genre in x["Style"]:
-                genres_str += genre + ", "
-            for i in filez:
-                mp3file = MP3(i, ID3=EasyID3)
-                mp3file["style"] = genres_str[:-2]
-                mp3file.save()
-    except Exception as e:
-        print("error:", e)
-
-
-
-def load_mp3_with_pydub(file_path):
-    try:
-        # Load the MP3 file with pydub
-        print(f"Loading MP3 file: {file_path}")
-        audio = AudioSegment.from_mp3(file_path)
-        
-        # Convert audio data to a NumPy array
-        samples = np.array(audio.get_array_of_samples(), dtype=np.float32)
-        
-        # Convert to mono if stereo
-        if audio.channels == 2:
-            print("Converting stereo to mono")
-            samples = samples.reshape((-1, 2)).mean(axis=1)
-        
-        # Normalize samples to range between -1 and 1 (librosa compatibility)
-        samples /= np.iinfo(audio.array_type).max
-        print(f"Loaded {len(samples)} samples with frame rate {audio.frame_rate}")
-        
-        # Return samples and sample rate
-        return samples, audio.frame_rate
-    except Exception as e:
-        print(f"Error loading MP3 file: {e}")
-        return None, None
-
-def analyze_bpm(file_path):
-    # Load audio data with pydub
-    y, sr = load_mp3_with_pydub(file_path)
-    
-    if y is None or sr is None:
-        print("Failed to load audio data.")
-        return None
-    
-    # Calculate the onset envelope and tempo
-    try:
-        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-
-        tempo, _ = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr)
-        
-        # Ensure that tempo is a number before returning
-        if np.isnan(tempo):
-            print("Tempo calculation failed or returned an invalid value.")
-            return None
-        
-        print(f"Estimated BPM: ", int(round(tempo[0])))
-        return int(round(tempo[0]))
-    
-    except Exception as e:
-        print(f"Error calculating BPM: {e}")
-        return None
-
-def write_bpm_to_mp3(file_path, bpm):
-    try:
-        # Load the MP3 file with mutagen
-        audio = MP3(file_path, ID3=ID3)
-        
-        # Add an ID3 tag if none exists
-        if audio.tags is None:
-            audio.add_tags()
-        
-        # Add or update the BPM tag
-        audio.tags.add(TBPM(encoding=3, text=str(bpm)))
-        audio.save()
-        
-        print(f"BPM written to {file_path}: {bpm} BPM")
-    except Exception as e:
-        print(f"Error writing BPM to MP3: {e}")
-
-for idx, x in df_final.iloc[:1].iterrows():
-    try:
-        print(x["Path"])
-        audio_file_path = x["Path"]
-        bpm = analyze_bpm(audio_file_path)
-        print(bpm)
-        if bpm is not None:
-            write_bpm_to_mp3(audio_file_path, bpm)
-    except Exception as e:
-        print("error:", e)
-
-"""
