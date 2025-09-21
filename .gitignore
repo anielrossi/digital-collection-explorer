@@ -1,2 +1,5 @@
 df_*
 test
+.DS_Store
+.gitignore
+.vscode/settings.json
