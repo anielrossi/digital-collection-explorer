@@ -9,7 +9,8 @@ from mutagen.id3 import ID3
 
 #root_dir = "/Volumes/TOSHIBA/Rekordbox_database_selected"
 #root_dir = "/Volumes/TOSHIBA/test_collection"
-root_dir = "/Users/aniel/digital-collection-explorer/test" 
+#root_dir = "/Users/aniel/digital-collection-explorer/test" 
+root_dir = "/Volumes/CRUCIAL/Rekordbox Database"
 
 data = []
 
@@ -23,7 +24,7 @@ for dirpath, dirnames, filenames in os.walk(root_dir):
                 comments = id3file.getall("COMM")
                 extracted_texts = [comm.text[0] for comm in comments]
                 mp3file = MP3(file_path, ID3=EasyID3)
-                if(extracted_texts == [] or "Visit" in extracted_texts[0]):
+                if(extracted_texts == []):
                     print('Empty comment section or Visit from bandcamp')
                     print(filename) 
                     data.append({
@@ -83,7 +84,6 @@ df["Labels"] = labels
 
 df.to_csv("df_local.csv")
 
-
 #import pandas as pd
 
 #df = pd.read_csv('df_clean_local.csv', index_col=0)
@@ -92,8 +92,8 @@ df.to_csv("df_local.csv")
 errors = df[(df["OK/KO"] == "KO") | (df["Genres"] == "error")]
 df_final = df.drop(index=errors.index)
 
-#df_final.to_csv("df_clean_local.csv")
-#errors.to_csv('errors_local.csv')
+df_final.to_csv("df_clean_local.csv")
+errors.to_csv('errors_local.csv')
 
 """
 df_exploded = df_final.explode("style").drop("genres", axis=1)
@@ -131,6 +131,7 @@ for idx, i in df_final.iterrows():
     except:
         print("error:", idx)
 
+"""
 print("---------delete comments---------")
 for idx, i in df_final.iterrows():
     try:
@@ -146,6 +147,7 @@ for idx, i in df_final.iterrows():
             mp3file.save()
     except Exception as e:
         print("error:", e)
+"""
 
 print("---------writing comments---------")
 for idx, i in df_final.iterrows():
