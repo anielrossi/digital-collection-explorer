@@ -5,20 +5,23 @@ from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3
 
-#root_dir = "/Volumes/CRUCIAL/Rekordbox Database"
-root_dir = "test"
+root_dir = "/Volumes/CRUCIAL/Rekordbox Database"
+#root_dir = "test"
 output_csv = "df_local.csv"
 
 # Initialize discogs client
 d = discogs_client.Client('tracklist_explorer', user_token='TQnLrfoPbUSIPjrwWqIkZSkuJczEwsHtQXbdegwL')
 
 # Load already processed paths if CSV exists
-if os.path.exists(output_csv):
-    df_existing = pd.read_csv(output_csv)
-    processed_paths = set(df_existing["Path"].tolist())
-else:
-    df_existing = pd.DataFrame()
-    processed_paths = set()
+#if os.path.exists(output_csv):
+#    df_existing = pd.read_csv(output_csv)
+#    processed_paths = set(df_existing["Path"].tolist())
+#else:
+#    df_existing = pd.DataFrame()
+#    processed_paths = set()
+
+df_existing = pd.DataFrame()
+processed_paths = set()
 
 def process_file(file_path):
     try:
