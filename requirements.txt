@@ -1,0 +1,15 @@
+certifi==2025.8.3
+charset-normalizer==3.4.3
+idna==3.10
+mutagen==1.47.0
+numpy==2.2.6
+oauthlib==3.3.1
+pandas==2.3.2
+pydub==0.25.1
+python-dateutil==2.9.0.post0
+python3-discogs-client==2.8
+pytz==2025.2
+requests==2.32.5
+six==1.17.0
+tzdata==2025.2
+urllib3==2.5.0
